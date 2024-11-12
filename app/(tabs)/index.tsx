@@ -15,7 +15,8 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Bell, Compass, EggFriedIcon, Home, MessageCircle, MoreHorizontal, Plus, ThumbsUp, Users } from 'lucide-react-native';
-import { useRouter } from 'expo-router';
+import { router } from 'expo-router';
+import { Link } from 'expo-router';
 
 type Styles = {
   container: ViewStyle;
@@ -162,8 +163,7 @@ const NavigationBar: React.FC = () => {
     icon: any;
     label?: string;
   }
-  const router = useRouter();
-
+ 
   const navItems: NavItem[] = [
     { id: 'home', icon: <Home size={30} />, label: 'Home' },
     { id: 'discover', icon: <Compass size={30} />, label: 'Discover' },
@@ -174,7 +174,7 @@ const NavigationBar: React.FC = () => {
 
   const changeTab = (id: string) => {
     const link = id === 'home' ? '/' : `/${id}`;
-    router.navigate(link as any);
+    router.replace(link as any);
   };
 
   return (
@@ -292,7 +292,6 @@ const App: React.FC = () => {
         </View>
       </ScrollView>
 
-      <NavigationBar />
     </SafeAreaView>
   );
 };
