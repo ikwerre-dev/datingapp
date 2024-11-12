@@ -47,7 +47,7 @@ export default function TabLayout() {
       setActiveTab(id);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
       const link: string = id === 'home' ? '/' : `/${id}`;
-      router.replace(link as any);
+      router.navigate(link as any);
       console.log(activeTab);
     };
 
@@ -141,7 +141,7 @@ export default function TabLayout() {
           }}
         />
       </Tabs>
-      <NavigationBar />
+      {activeTab == 'camera' ? '' : <NavigationBar />}
     </>
   );
 }

@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.codewithhonour.datingapp"  
+      "bundleIdentifier": "com.codewithhonour.datingapp"
     },
     "android": {
       "adaptiveIcon": {
@@ -31,7 +31,15 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
+          "recordAudioAndroid": true
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
@@ -50,8 +58,6 @@
     "updates": {
       "url": "https://u.expo.dev/2ddd7b8c-ce88-468c-8ab1-84ed06532934"
     },
-      "main": "expo-router/entry"
-    
-    
+    "main": "expo-router/entry"
   }
 }
