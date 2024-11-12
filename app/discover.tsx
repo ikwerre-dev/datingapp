@@ -194,7 +194,7 @@ const NavigationBar: React.FC = () => {
   );
 };
 
-const App: React.FC = () => {
+const Discover: React.FC = () => {
   const [tab, setTab] = useState(0);
   const handleMakeFriends = (): void => {
     console.log('Discover pressed');
@@ -209,41 +209,8 @@ const App: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>G-Plug</Text>
-        <TouchableOpacity style={styles.notificationButton}>
-          <Bell color="#2a91f7" size={20} />
-        </TouchableOpacity>
-      </View>
 
       <ScrollView style={styles.content}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.storiesContainer}
-        >
-          <StoryCircle
-            image="https://i.pravatar.cc/150?img=3"
-            name="My Story"
-            isAdd={true}
-          />
-          <StoryCircle
-            image="https://i.pravatar.cc/150?img=43"
-            name="Selena"
-          />
-          <StoryCircle
-            image="https://i.pravatar.cc/150?img=41"
-            name="Clara"
-          />
-          <StoryCircle
-            image="https://i.pravatar.cc/150?img=36"
-            name="Fabian"
-          />
-          <StoryCircle
-            image="https://i.pravatar.cc/150?img=27"
-            name="Ge"
-          />
-        </ScrollView>
 
         <View style={styles.actionButtonsContainer}>
           <ActionButton
@@ -562,4 +529,4 @@ const styles = StyleSheet.create<Styles>({
   },
 });
 
-export default App;
+export default Discover;

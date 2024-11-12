@@ -1,6 +1,15 @@
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { useRouter } from 'expo-router';
 
 export default function Login() {
+  const router = useRouter();
+
+    const handleLogin = async () => {
+   
+        router.replace('/');
+    
+      };
+    
     return (
         <View style={styles.container}>
             <View style={styles.imageContainer}>
@@ -12,7 +21,7 @@ export default function Login() {
 
             <Text style={styles.title}>Let's meeting new{'\n'}people around you</Text>
 
-            <TouchableOpacity style={styles.phoneButton}>
+            <TouchableOpacity onPress={handleLogin} style={styles.phoneButton}>
                 <Image
                     source={require('@/assets/images/phone.png')}
                     style={styles.buttonIcon}
@@ -61,6 +70,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginBottom: 40,
         lineHeight: 32,
+        color: '#000'
     },
     phoneButton: {
         flexDirection: 'row',
@@ -83,19 +93,19 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
     buttonIcon: {
-        width: 40,
-        height: 40,
+        width: 50,
+        height: 50,
         marginRight: 12,
     },
     phoneButtonText: {
         color: '#fff',
-        fontSize: 16,
+        fontSize: 22,
         fontWeight: '800',
-        fontFamily: 'Inter-Black'
-    },
+     },
     googleButtonText: {
-        color: '#163B4C',
-        fontSize: 16,
+        color: '#fff',
+        // color: '#163B4C',
+        fontSize: 22,
         fontWeight: '800',
         
     },

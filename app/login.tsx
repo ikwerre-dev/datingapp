@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View, TextInput, Button, StyleSheet, Alert } from 'react-native';
-import { useAuth } from './context/auth';
+// import { useAuth } from './context/auth';
 import { useRouter } from 'expo-router';
 
 export default function Login() {
@@ -12,7 +12,7 @@ export default function Login() {
 
   const handleLogin = async () => {
    
-    router.replace('/');
+    router.replace('/intro');
 
   };
 
