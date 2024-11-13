@@ -66,7 +66,7 @@ const MapScreen = () => {
     <View style={styles.container}>
       {loading || location === null ? (
         <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Please hold on: loading...</Text>
+          <Text style={styles.loadingText}>Please hold on: loading map...</Text>
         </View>
       ) : (
         <MapView

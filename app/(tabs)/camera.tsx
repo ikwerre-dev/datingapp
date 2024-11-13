@@ -1,36 +1,37 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { CameraView, CameraType, useCameraPermissions, useMicrophonePermissions, FlashMode, CameraMode } from 'expo-camera';
-import { StyleSheet, Text, TouchableOpacity, View, TouchableWithoutFeedback, Button, Image } from 'react-native';
+import { CameraView, CameraType, useCameraPermissions, FlashMode, CameraMode } from 'expo-camera';
+import { StyleSheet, Text, TouchableOpacity, View, TouchableWithoutFeedback, PanResponder } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import * as MediaLibrary from 'expo-media-library';
-import { Video } from 'expo-av';
-import { usePreventScreenCapture } from 'expo-screen-capture';
-import { SendHorizontal, X } from 'lucide-react-native';
+import { X, Grid, FlipHorizontal2, Focus, Settings2, Lock } from 'lucide-react-native';
 import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 
-export default function App() {
+export default function CameraComponent() {
     const [permission, requestPermission] = useCameraPermissions();
-    const [microphonepermission, requestmicrophonePermission] = useMicrophonePermissions();
     const [isRecording, setIsRecording] = useState(false);
     const [isTakingPicture, setIsTakingPicture] = useState(false);
-    const [facing, setFacing] = useState<CameraType>('back');
-    const [videoUri, setVideoUri] = useState<string | null>(null);
-    const [photoUri, setPhotoUri] = useState<string | null>(null);
-    const [flash, setFlash] = useState<FlashMode | undefined>('on');
-    const [mode, setMode] = useState<CameraMode>("video");
+    const [facing, setFacing] = useState<CameraType>('front');
+    const [flash, setFlash] = useState<FlashMode>('off');
+    const [mode, setMode] = useState<CameraMode>('picture');
     const [countdown, setCountdown] = useState(30);
+    const [isLocked, setIsLocked] = useState(false);
     const cameraRef = useRef<CameraView | null>(null);
-    const pressStart = useRef<number | null>(null);
+    const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+    const lastTap = useRef<number>(0);
+    const [isGridVisible, setIsGridVisible] = useState(false);
+    const [isMuted, setIsMuted] = useState(false);
+    const [focusMode, setFocusMode] = useState<'auto' | 'continuous'>('auto');
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+
     useEffect(() => {
-        let countdownInterval: any;
+        let countdownInterval: NodeJS.Timeout;
         if (isRecording) {
             countdownInterval = setInterval(() => {
                 setCountdown((prev) => {
                     if (prev <= 1) {
                         stopRecording();
-                        clearInterval(countdownInterval);
                         return 30;
                     }
                     return prev - 1;
@@ -40,319 +41,346 @@ export default function App() {
         return () => clearInterval(countdownInterval);
     }, [isRecording]);
 
+    const panResponder = PanResponder.create({
+        onMoveShouldSetPanResponder: (_, gestureState) => {
+            return Math.abs(gestureState.dy) > 10;
+        },
+        onPanResponderMove: (_, gestureState) => {
+            if (gestureState.dy < -50 && !isLocked) {
+                setIsLocked(true);
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            }
+        },
+        onPanResponderRelease: () => {
+            if (!isLocked) {
+                stopRecording();
+            }
+        },
+    });
+
     const toggleCameraFacing = () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
         setFacing((prev) => (prev === 'back' ? 'front' : 'back'));
     };
-    const goBack = () => {
-        router.back();
-    };
+
     const toggleFlash = () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
         setFlash((prev) => (prev === 'off' ? 'on' : 'off'));
     };
 
-    const handleShutterPressIn = () => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-
-        pressStart.current = Date.now();
-        setMode('video')
-        setTimeout(() => {
-            if (pressStart.current && Date.now() - pressStart.current > 600) {
-                handleLongPress();
-            }
-        }, 1000);
+    const handleDoubleTap = () => {
+        const now = Date.now();
+        const DOUBLE_PRESS_DELAY = 300;
+        if (now - lastTap.current < DOUBLE_PRESS_DELAY) {
+            toggleCameraFacing();
+        } else {
+            lastTap.current = now;
+        }
     };
 
-    const handleShutterPressOut = async () => {
-        const pressDuration = Date.now() - (pressStart.current || 0);
-
-        if (pressDuration < 1000) {
-            setIsTakingPicture(true)
-            await takePicture();
-            stopRecording();
-        } else if (isRecording) {
-            stopRecording();
+    const handleShutterPress = () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        if (mode === 'picture') {
+            takePicture();
+        } else {
+            if (isRecording) {
+                stopRecording();
+            } else {
+                startRecording();
+            }
         }
-        pressStart.current = null;
+    };
+
+    const handleShutterLongPress = () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+        setMode('video');
+        startRecording();
+    };
+
+    const handleShutterPressIn = () => {
+        longPressTimer.current = setTimeout(handleShutterLongPress, 500);
+    };
+
+    const handleShutterPressOut = () => {
+        if (longPressTimer.current) {
+            clearTimeout(longPressTimer.current);
+        }
     };
 
     const takePicture = async () => {
         if (cameraRef.current) {
-            const photo: any = await cameraRef.current.takePictureAsync();
+            setIsTakingPicture(true);
+            const photo = await cameraRef.current.takePictureAsync();
             console.log('Photo taken:', photo.uri);
-            setPhotoUri(photo.uri)
-            // MediaLibrary.saveToLibraryAsync(photo.uri)
-            setIsTakingPicture(false)
+            setIsTakingPicture(false);
         }
     };
 
-
-    const recordingOptions = {
-        maxDuration: 30, // Maximum duration of video in seconds
-        mute: false, // Set to true to mute audio during recording
-    };
-
-    const handleLongPress = async () => {
+    const startRecording = async () => {
         if (cameraRef.current && !isRecording) {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
             setIsRecording(true);
-            console.log('Started Recording')
-            const videoRecordPromise = cameraRef.current.recordAsync(recordingOptions);
-            const { uri } = await videoRecordPromise;
-            setVideoUri(uri);
-            // MediaLibrary.saveToLibraryAsync(uri)
-            console.log('Temporary video file saved at:', uri);
+            console.log('Started Recording');
+            const video = await cameraRef.current.recordAsync();
+            console.log('Video recorded:', video.uri);
         }
     };
+
     const stopRecording = () => {
-        const cameraInstance = cameraRef.current;
-        setIsRecording(false);
-        cameraInstance?.stopRecording();
-        console.log('stopped')
-        setCountdown(30);
-        setMode('picture')
-
-    };
-
-
-    const handleDoubleTap = () => {
-        const now = Date.now();
-        if (pressStart.current && now - pressStart.current < 300) {
-            toggleCameraFacing();
-        } else {
-            pressStart.current = now;
+        if (isRecording) {
+            setIsRecording(false);
+            cameraRef.current?.stopRecording();
+            console.log('Stopped Recording');
+            setCountdown(30);
+            setMode('picture');
+            setIsLocked(false);
         }
     };
-  
-    const handleGalleryPress = async () => {
-        // Request camera roll permissions
-        const { status } = await MediaLibrary.requestPermissionsAsync();
-    
-        // Check if permission is granted
-        if (status === 'granted') {
-            // Open the gallery for image and video selection
-            const result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.All,  // Allows both images and videos
-                allowsEditing: true, // Allows the user to edit the image or video
-                aspect: [9, 16], // Optional: Set aspect ratio for cropping (for images)
-                quality: 1, // Maximum quality (for images)
-            });
-    
-            // Check if the user selected a media
-            if (!result.canceled) {
-                // Handle the selected media (either image or video)
-                console.log('Selected media URI:', result.assets[0].uri);
-                console.log('Selected media type:', result.assets[0].type);
-            } else {
-                console.log('User canceled media picker');
-            }
-        } else {
-            console.log('Permission to access media library denied');
+
+    const openGallery = async () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.All,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            console.log(result.assets[0]);
+            // Handle the selected image or video
         }
     };
+
+    const toggleGrid = () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+        setIsGridVisible(prev => !prev);
+    };
+
+    const toggleFocusMode = () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+        setFocusMode(prev => prev === 'auto' ? 'continuous' : 'auto');
+    };
+    const toggleMute = () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+        setIsMuted(prev => !prev);
+    };
+    const toggleSettings = () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+        setIsSettingsOpen(prev => !prev);
+    };
+
     if (!permission) {
-        return <View />;
+        return <View style={styles.container}><Text>Requesting permissions...</Text></View>;
     }
-    if (!microphonepermission) {
-        return <View />;
-    }
+
     if (!permission.granted) {
         return (
             <View style={styles.container}>
-                <Text style={styles.message}>We need your permission to show the camera</Text>
-                <Button onPress={requestPermission} title="Grant permission" />
+                <Text style={styles.message}>We need your permission to use the camera</Text>
+                <TouchableOpacity onPress={() => { requestPermission(); }}>
+                    <Text style={styles.button}>Grant permissions</Text>
+                </TouchableOpacity>
             </View>
         );
     }
-    if (!microphonepermission.granted) {
-        return (
-            <View style={styles.container}>
-                <Text style={styles.message}>We need your permission to record Audio</Text>
-                <Button onPress={requestmicrophonePermission} title="Grant permission" />
-            </View>
-        );
-    }
+
     return (
         <View style={styles.container}>
             <CameraView
                 style={styles.camera}
-                facing={facing}
                 ref={cameraRef}
+                facing={facing}
                 flash={flash}
                 mode={mode}
-                zoom={facing == 'back' ? 0 : 0.0008}
-                animateShutter={true}
-                enableTorch={true}
-                videoStabilizationMode='cinematic'
-                videoQuality='1080p'
-
+                zoom={facing === 'back' ? 0 : 0.0008}
+                videoStabilizationMode="cinematic"
+                videoQuality="1080p"
+                autoFocus={focusMode}
             >
                 <TouchableWithoutFeedback onPress={handleDoubleTap}>
                     <View style={styles.cameraContainer}>
                         {isRecording && (
                             <View style={styles.recordingIndicator}>
-                                <View style={styles.redBox}>
-                                    <Text style={styles.redBoxText}>0:{countdown.toString().padStart(2, '0')}</Text>
-                                </View>
+                                <Text style={styles.recordingText}>● {countdown}s</Text>
+                            </View>
+                        )}
+                        {isGridVisible && (
+                            <View style={styles.gridOverlay}>
+                                <View style={[styles.gridLine, styles.horizontalLine, { top: '33%' }]} />
+                                <View style={[styles.gridLine, styles.horizontalLine, { top: '66%' }]} />
+                                <View style={[styles.gridLine, styles.verticalLine, { left: '33%' }]} />
+                                <View style={[styles.gridLine, styles.verticalLine, { left: '66%' }]} />
                             </View>
                         )}
                     </View>
                 </TouchableWithoutFeedback>
-                <TouchableWithoutFeedback onPress={toggleFlash}>
-                    <View style={styles.backController}>
 
-                        <View style={styles.closeIndicator}>
-                            <Ionicons name={flash === 'on' ? 'flash' : 'flash-off'} size={30} color="white" />
+                <View style={styles.verticalMenu}>
+                    <TouchableOpacity style={styles.menuButton} onPress={toggleFlash}>
+                        <Ionicons name={flash === 'on' ? 'flash' : 'flash-off'} size={24} color="white" />
+                    </TouchableOpacity>
+                    {isSettingsOpen && (<>
 
-                        </View>
-
-                    </View>
-
-                </TouchableWithoutFeedback>
-                <Image src='' />
-
-                {/* {!isTakingPicture && !isRecording && videoUri && (
-                    <Video
-                        source={{ uri: videoUri }}
-                        style={styles.video}
-                        shouldPlay
-                        // useNativeControls={true}
-                        isLooping={false}
-                    />
-                )} */}
-
-                <View style={styles.CameraControlBar}>
-
-                    <View style={styles.controls}>
-                        <TouchableOpacity style={styles.icon} onPress={goBack}>
-                            <X size={30} color={'white'} />
-
+                        <TouchableOpacity style={styles.menuButton} onPress={toggleGrid}>
+                            <Grid size={24} color={isGridVisible ? "yellow" : "white"} />
                         </TouchableOpacity>
-                    </View>
-                    <View style={styles.shutterContainer}>
-                        <TouchableOpacity
-                            style={styles.shutterButton}
-                            onPressIn={handleShutterPressIn}
-                            onPressOut={handleShutterPressOut}
-                        >
-                            <View style={isRecording ? styles.shutter : '' as any}></View>
+                        <TouchableOpacity style={styles.menuButton} onPress={toggleCameraFacing}>
+                            <FlipHorizontal2 size={24} color="white" />
                         </TouchableOpacity>
-                    </View>
-                    <View style={styles.controls}>
-                        <TouchableOpacity
-                            style={styles.icon}
-                            onPress={handleGalleryPress}
-                        >
-                            <Ionicons name="image" size={30} color="white" />
+                        <TouchableOpacity style={styles.menuButton} onPress={toggleFocusMode}>
+                            <Focus size={24} color={focusMode === 'continuous' ? "yellow" : "white"} />
                         </TouchableOpacity>
-                    </View>
+                        <TouchableOpacity style={styles.menuButton} onPress={toggleMute}>
+                            <Ionicons
+                                name={isMuted ? "mic-off" : "mic"}
+                                size={24}
+                                color="white"
+                            />
+                        </TouchableOpacity>
+                    </>)}
+                    <TouchableOpacity style={styles.menuButton} onPress={toggleSettings}>
+                        <Settings2 size={24} color={isSettingsOpen ? "yellow" : "white"} />
+                    </TouchableOpacity>
 
                 </View>
-            </CameraView>
-        </View>
+
+                <View style={styles.controlBar}>
+                    <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+                        <X size={30} color="white" />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        {...panResponder.panHandlers}
+                        style={[styles.shutterButton, isRecording && styles.recordingShutter]}
+                        onPress={handleShutterPress}
+                        onPressIn={handleShutterPressIn}
+                        onPressOut={handleShutterPressOut}
+                    >
+                        {isLocked && <Lock size={24} color="white" style={styles.lockIcon} />}
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.galleryButton} onPress={openGallery}>
+                        <Ionicons name="images" size={30} color="white" />
+                    </TouchableOpacity>
+                </View>
+            </CameraView >
+        </View >
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    message: {
-        textAlign: 'center',
-        paddingBottom: 10,
+        backgroundColor: 'black',
     },
     camera: {
         flex: 1,
-        width: '100%',
     },
     cameraContainer: {
         flex: 1,
-        justifyContent: 'space-between',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
     },
-    backController: {
-        // flex: 1,
+    message: {
+        color: 'white',
+        textAlign: 'center',
+        marginBottom: 20,
+    },
+    button: {
+        color: 'blue',
+        fontSize: 18,
+        textAlign: 'center',
+    },
+    verticalMenu: {
         position: 'absolute',
+        top: 40,
+        right: 20,
         flexDirection: 'column',
-        alignItems: 'flex-start',
-        justifyContent: 'space-between',
+        alignItems: 'center',
     },
-    CameraControlBar: {
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    menuButton: {
+        backgroundColor: 'rgba(0,0,0,0.6)',
         borderRadius: 30,
+        padding: 10,
+        marginBottom: 10,
+    },
+    controlBar: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingHorizontal: 20,
-        paddingVertical: 10,
-        paddingBottom: 40,
+        paddingBottom: 50,
+        paddingTop: 20,
+        backgroundColor: 'rgba(0,0,0,0.3)',
     },
-    controls: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        padding: 20,
-        top: 0,
-    },
-    icon: {
+    backButton: {
         padding: 10,
     },
-    shutterContainer: {},
     shutterButton: {
         width: 70,
         height: 70,
-        borderRadius: 40,
+        borderRadius: 35,
         backgroundColor: 'white',
+        borderWidth: 5,
+        borderColor: 'rgba(0,0,0,0.3)',
         justifyContent: 'center',
         alignItems: 'center',
     },
-    shutter: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
+    recordingShutter: {
         backgroundColor: 'red',
+    },
+    galleryButton: {
+        padding: 10,
     },
     recordingIndicator: {
         position: 'absolute',
-        top: 50,
-        right: 20,
+        top: 40,
+        alignSelf: 'center',
+        backgroundColor: 'rgba(255,0,0,0.6)',
+        borderRadius: 20,
+        padding: 10,
+        paddingHorizontal:20
     },
-    closeIndicator: {
-        position: 'absolute',
-        top: 50,
-        left: 20,
-        backgroundColor: 'rgba(0,0,0,0.6)',
-        borderRadius: 50,
-        padding: 10
-    },
-    redBox: {
-        width: 60,
-        height: 30,
-        backgroundColor: 'rgba(255,0,0,0.4)',
-        borderRadius: 60,
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    redBoxText: {
-        color: '#fff',
-        fontSize: 20,
+    recordingText: {
+        color: 'white',
         fontWeight: 'bold',
     },
-    sendButton: {
-        backgroundColor: 'black',
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 50,
-    },
-    sendText: {
-        color: 'white',
-        fontSize: 18,
-    },
-    video: {
-        width: '100%',
-        height: 200,
+    lockIcon: {
         position: 'absolute',
-        bottom: 100,
+    },
+    gridOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    gridLine: {
+        flex: 1,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.5)',
+    },
+    horizontalLine: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        height: 1,
+    },
+    verticalLine: {
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        width: 1,
+    },
+    muteButton: {
+        position: 'absolute',
+        top: 40,
+        right: 20,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        borderRadius: 30,
+        padding: 10,
     },
 });

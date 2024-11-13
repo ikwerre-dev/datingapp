@@ -1,16 +1,17 @@
 import {
-    View, 
-    Dimensions, 
-    FlatList, 
-    StyleSheet, 
-    Pressable, 
-    Image, 
-    Text, 
+    View,
+    Dimensions,
+    FlatList,
+    StyleSheet,
+    Pressable,
+    Image,
+    Text,
     TouchableOpacity,
     StyleProp,
     ImageStyle,
     Animated,
-    Easing
+    Easing,
+    PanResponder
 } from 'react-native';
 import { Video, ResizeMode } from 'expo-av';
 import React, { useEffect, useRef, useState } from 'react';
@@ -45,13 +46,13 @@ export default function FeedScreen() {
         };
     }, []);
 
-    const viewabilityConfig = { viewAreaCoveragePercentThreshold: 50 }
+    const viewabilityConfig = { viewAreaCoveragePercentThreshold: 50 };
     const onViewableItemsChanged = ({ viewableItems }: any) => {
         if (viewableItems.length > 0) {
             setCurrentViewableItemIndex(viewableItems[0].index ?? 0);
         }
-    }
-    const viewabilityConfigCallbackPairs = useRef([{ viewabilityConfig, onViewableItemsChanged }])
+    };
+    const viewabilityConfigCallbackPairs = useRef([{ viewabilityConfig, onViewableItemsChanged }]);
 
     return (
         <View style={styles.container}>
@@ -62,11 +63,11 @@ export default function FeedScreen() {
                         item={item}
                         shouldPlay={index === currentViewableItemIndex}
                         ref={(ref) => {
-                            videoRefs.current[index] = ref;
+                            videoRefs.current[index] = ref as Video | null; // Cast ref to Video | null
                         }}
                     />
                 )}
-                keyExtractor={item => item}
+                keyExtractor={(item) => item}
                 pagingEnabled
                 horizontal={false}
                 showsVerticalScrollIndicator={false}
@@ -83,9 +84,56 @@ const Item = React.forwardRef(({ item, shouldPlay }: { shouldPlay: boolean; item
     const [loadError, setLoadError] = useState(false);
     const [isActuallyPlaying, setIsActuallyPlaying] = useState(false);
     const spinValue = new Animated.Value(0);
+    const [progress, setProgress] = useState(0);
 
     // Set the ref for parent component access
     React.useImperativeHandle(ref, () => video.current);
+    const [isDragging, setIsDragging] = useState(false);
+    const progressBarWidth = useRef(new Animated.Value(0)).current;
+
+    const panResponder = useRef(
+        PanResponder.create({
+            onStartShouldSetPanResponder: () => true,
+            onPanResponderGrant: () => {
+                setIsDragging(true);
+            },
+            onPanResponderMove: (_, gestureState) => {
+
+                // const newProgress = Math.max(0, Math.min(1, gestureState.moveX / progressBarWidth));
+                // progressBarWidth.setValue(newProgress * styles.progressBar.width);
+
+                console.debug('Starting - Honour')
+            },
+            onPanResponderRelease: (_, gestureState) => {
+                // const newProgress = Math.max(0, Math.min(1, gestureState.moveX / styles.progressBar.width));
+                // if (video.current && status?.durationMillis) {
+                //     video.current.setPositionAsync(newProgress * status.durationMillis);
+                // }
+                console.debug('Stopping')
+
+                // setIsDragging(false);
+            },
+        })
+    ).current;
+
+
+
+    useEffect(() => {
+        if (!isDragging && status?.positionMillis && status?.durationMillis) {
+            const currentProgress = status.positionMillis / status.durationMillis;
+            setProgress(currentProgress);
+            const newWidth = currentProgress * 100; // Convert to percentage
+
+            Animated.timing(progressBarWidth, {
+                toValue: newWidth,
+                duration: 500,
+                useNativeDriver: false,
+            }).start();
+
+            // console.log(`New progress bar width: ${newWidth}%`);
+        }
+    }, [status?.positionMillis, status?.durationMillis, isDragging]);
+
 
     // Handle loading animation
     useEffect(() => {
@@ -162,25 +210,33 @@ const Item = React.forwardRef(({ item, shouldPlay }: { shouldPlay: boolean; item
 
     const togglePlayPause = async () => {
         if (!video.current) return;
-        
+
         try {
             const currentStatus = await video.current.getStatusAsync();
             console.log('Current video status:', currentStatus);
-            
-            if (currentStatus.isPlaying) {
-                await video.current.pauseAsync();
-                setIsActuallyPlaying(false);
-                console.log('Video paused successfully');
-            } else {
-                await video.current.playAsync();
-                setIsActuallyPlaying(true);
-                console.log('Video playing successfully');
+
+            if (currentStatus.isLoaded && 'isPlaying' in currentStatus) {
+                if (currentStatus.isPlaying) {
+                    await video.current.pauseAsync();
+                    setIsActuallyPlaying(false);
+                    console.log('Video paused successfully');
+                } else {
+                    await video.current.playAsync();
+                    setIsActuallyPlaying(true);
+                    console.log('Video playing successfully');
+                }
+            } else if (!currentStatus.isLoaded) {
+                handleRefresh();
             }
         } catch (error) {
             console.error('Error toggling play/pause:', error);
             setIsActuallyPlaying(false);
         }
     };
+
+    const likePost = (id:any) =>{
+        console.log('liked:' + id)
+    }
 
     return (
         <Pressable onPress={togglePlayPause}>
@@ -197,12 +253,13 @@ const Item = React.forwardRef(({ item, shouldPlay }: { shouldPlay: boolean; item
                         if (status?.isLoaded) {
                             setIsLoading(false);
                             setIsActuallyPlaying(status.isPlaying);
-                            console.log('Playback status update:', {
-                                isPlaying: status.isPlaying,
-                                position: status.positionMillis,
-                                duration: status.durationMillis,
-                                isBuffering: status.isBuffering
-                            });
+                            if (!isDragging) {
+                                if (status?.positionMillis && status?.durationMillis) {
+                                    const currentProgress = status.positionMillis / status.durationMillis;
+                                    setProgress(currentProgress);
+                                }
+
+                            }
                         }
                     }}
                     onError={(error) => {
@@ -212,7 +269,7 @@ const Item = React.forwardRef(({ item, shouldPlay }: { shouldPlay: boolean; item
                         setIsActuallyPlaying(false);
                     }}
                 />
-                
+
                 {/* Overlay for Play/Load/Error states */}
                 {(isLoading || !isActuallyPlaying || loadError) && (
                     <View style={styles.overlay}>
@@ -250,7 +307,7 @@ const Item = React.forwardRef(({ item, shouldPlay }: { shouldPlay: boolean; item
 
                 <View style={styles.PostButtoncontainer}>
                     <View style={styles.PostButtonmenuContainer}>
-                        <TouchableOpacity style={styles.PostButtonbutton}>
+                        <TouchableOpacity onPress={() => likePost(item)} style={styles.PostButtonbutton}>
                             <ThumbsUp size={24} color="#fff" />
                         </TouchableOpacity>
 
@@ -261,11 +318,21 @@ const Item = React.forwardRef(({ item, shouldPlay }: { shouldPlay: boolean; item
                         <TouchableOpacity style={styles.PostButtonbutton}>
                             <MoreHorizontal size={24} color="#fff" />
                         </TouchableOpacity>
-                        
+
                         <TouchableOpacity onPress={leave} style={styles.PostButtonbutton}>
                             <X size={24} color="#fff" />
                         </TouchableOpacity>
                     </View>
+                </View>
+                <View style={styles.progressBarContainer} {...panResponder.panHandlers}>
+                    <Animated.View
+                        style={[
+                            styles.progressBar,
+                            {
+                                width: progressBarWidth,
+                            },
+                        ]}
+                    />
                 </View>
             </View>
         </Pressable>
@@ -349,5 +416,18 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(255, 255, 255, 0.3)',
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    progressBarContainer: {
+        position: 'absolute',
+        bottom: 100, 
+        left: 0,
+        right: 0,
+        height: 5,
+        backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    },
+    progressBar: {
+        width: '1%',
+        height: 5,
+        backgroundColor: 'white',
     },
 });
