@@ -6,7 +6,8 @@ import * as Haptics from 'expo-haptics';
 import * as MediaLibrary from 'expo-media-library';
 import { Video } from 'expo-av';
 import { usePreventScreenCapture } from 'expo-screen-capture';
-import { SendHorizontal } from 'lucide-react-native';
+import { SendHorizontal, X } from 'lucide-react-native';
+import { router } from 'expo-router';
 
 export default function App() {
     const [permission, requestPermission] = useCameraPermissions();
@@ -41,7 +42,9 @@ export default function App() {
     const toggleCameraFacing = () => {
         setFacing((prev) => (prev === 'back' ? 'front' : 'back'));
     };
-
+    const goBack = () => {
+        router.back();
+    };
     const toggleFlash = () => {
         setFlash((prev) => (prev === 'off' ? 'on' : 'off'));
     };
@@ -94,7 +97,7 @@ export default function App() {
             console.log('Started Recording')
             const videoRecordPromise = cameraRef.current.recordAsync(recordingOptions);
             const { uri } = await videoRecordPromise;
-             setVideoUri(uri);
+            setVideoUri(uri);
             // MediaLibrary.saveToLibraryAsync(uri)
             console.log('Temporary video file saved at:', uri);
         }
@@ -173,6 +176,17 @@ export default function App() {
                         )}
                     </View>
                 </TouchableWithoutFeedback>
+                <TouchableWithoutFeedback onPress={toggleFlash}>
+                    <View style={styles.backController}>
+
+                        <View style={styles.closeIndicator}>
+                            <Ionicons name={flash === 'on' ? 'flash' : 'flash-off'} size={30} color="white" />
+
+                        </View>
+
+                    </View>
+
+                </TouchableWithoutFeedback>
                 <Image src='' />
 
                 {/* {!isTakingPicture && !isRecording && videoUri && (
@@ -186,6 +200,22 @@ export default function App() {
                 )} */}
 
                 <View style={styles.CameraControlBar}>
+
+                    <View style={styles.controls}>
+                        <TouchableOpacity style={styles.icon} onPress={goBack}>
+                            <X size={30} color={'white'} />
+
+                        </TouchableOpacity>
+                    </View>
+                    <View style={styles.shutterContainer}>
+                        <TouchableOpacity
+                            style={styles.shutterButton}
+                            onPressIn={handleShutterPressIn}
+                            onPressOut={handleShutterPressOut}
+                        >
+                            <View style={isRecording ? styles.shutter : '' as any}></View>
+                        </TouchableOpacity>
+                    </View>
                     <View style={styles.controls}>
                         <TouchableOpacity
                             style={styles.icon}
@@ -195,21 +225,6 @@ export default function App() {
                         </TouchableOpacity>
                     </View>
 
-                    <View style={styles.shutterContainer}>
-                        <TouchableOpacity
-                            style={styles.shutterButton}
-                            onPressIn={handleShutterPressIn}
-                            onPressOut={handleShutterPressOut}
-                        >
-                            <View style={isRecording ? styles.shutter : ''}></View>
-                        </TouchableOpacity>
-                    </View>
-
-                    <View style={styles.controls}>
-                        <TouchableOpacity style={styles.icon} onPress={toggleFlash}>
-                            <Ionicons name={flash === 'on' ? 'flash' : 'flash-off'} size={30} color="white" />
-                        </TouchableOpacity>
-                    </View>
                 </View>
             </CameraView>
         </View>
@@ -232,6 +247,13 @@ const styles = StyleSheet.create({
     },
     cameraContainer: {
         flex: 1,
+        justifyContent: 'space-between',
+    },
+    backController: {
+        // flex: 1,
+        position: 'absolute',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
         justifyContent: 'space-between',
     },
     CameraControlBar: {
@@ -272,6 +294,14 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 50,
         right: 20,
+    },
+    closeIndicator: {
+        position: 'absolute',
+        top: 50,
+        left: 20,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        borderRadius: 50,
+        padding: 10
     },
     redBox: {
         width: 60,

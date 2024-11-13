@@ -4,16 +4,12 @@ import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   View,
-
   TouchableOpacity,
-
   ViewStyle,
   TextStyle,
-  Text
-
 } from 'react-native';
 import { Compass, Home, MessageCircle, Plus, Users } from 'lucide-react-native';
-import { router } from 'expo-router';
+import { router, usePathname } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 
 type Styles = {
@@ -27,6 +23,13 @@ type Styles = {
 
 export default function TabLayout() {
   const [activeTab, setActiveTab] = useState('home');
+  const pathname = usePathname();
+
+  useEffect(() => {
+    // Update activeTab based on the current route
+    const currentTab = pathname === '/' ? 'home' : pathname.substring(1);
+    setActiveTab(currentTab);
+  }, [pathname]);
 
   const NavigationBar: React.FC = () => {
     interface NavItem {
@@ -40,7 +43,7 @@ export default function TabLayout() {
       { id: 'discover', icon: <Compass size={30} />, label: 'Discover' },
       { id: 'camera', icon: <Plus size={30} />, label: '' },
       { id: 'friends', icon: <Users size={30} />, label: 'Friends' },
-      { id: 'messages', icon: <MessageCircle size={30} />, label: 'Messages' }
+      { id: 'messages', icon: <MessageCircle size={30} />, label: 'Messages' },
     ];
 
     const changeTab = (id: string) => {
@@ -48,7 +51,6 @@ export default function TabLayout() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
       const link: string = id === 'home' ? '/' : `/${id}`;
       router.navigate(link as any);
-      console.log(activeTab);
     };
 
     return (
@@ -61,23 +63,22 @@ export default function TabLayout() {
               style={styles.navItem}
             >
               {React.cloneElement(item.icon, {
-                color: activeTab === item.id ? '#2a91f7' : 'black'
+                color: activeTab === item.id ? '#2a91f7' : 'black',
               })}
             </TouchableOpacity>
           ))}
         </View>
       </View>
     );
+  };
 
-  }
   const styles = StyleSheet.create<Styles>({
     navBarContent: {
       position: 'absolute',
       bottom: 0,
       width: '100%',
       padding: 30,
-      paddingBottom: 60
-
+      paddingBottom: 60,
     },
     navBar: {
       flexDirection: 'row',
@@ -87,8 +88,7 @@ export default function TabLayout() {
       borderColor: '#EEEEEE',
       width: '100%',
       backgroundColor: '#fff',
-      borderRadius: 50
-
+      borderRadius: 50,
     },
     navItem: {
       alignItems: 'center',
@@ -119,7 +119,6 @@ export default function TabLayout() {
             headerShown: false,
             tabBarIcon: ({ color }) => <FontAwesome size={28} name="home" color={color} />,
             tabBarStyle: { display: 'none' },
-
           }}
         />
         <Tabs.Screen
@@ -141,7 +140,7 @@ export default function TabLayout() {
           }}
         />
       </Tabs>
-      {activeTab == 'camera' ? '' : <NavigationBar />}
+      {activeTab !== 'camera' && <NavigationBar />}
     </>
   );
 }
