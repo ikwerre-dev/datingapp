@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -11,12 +11,14 @@ import {
   ViewStyle,
   TextStyle,
   ImageStyle,
-  StyleProp
+  StyleProp,
+  RefreshControl
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Bell, Compass, EggFriedIcon, Home, MessageCircle, MoreHorizontal, Plus, ThumbsUp, Users } from 'lucide-react-native';
+import { Bell, Compass, EggFriedIcon, Home, MessageCircle, MoreHorizontal, Plus, Search, ThumbsUp, Users } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { Link } from 'expo-router';
+import { Video } from 'expo-av';
 
 type Styles = {
   container: ViewStyle;
@@ -56,10 +58,12 @@ type Styles = {
   navIcon: ViewStyle;
   activeNavIcon: ViewStyle;
   navText: TextStyle;
+  PostCardsView: ViewStyle;
   PostButtoncontainer: ViewStyle;
   PostButtonmenuContainer: ViewStyle;
   PostButtonbutton: ViewStyle;
 };
+type PostType = "image" | "video";
 
 interface StoryCircleProps {
   image: string;
@@ -81,9 +85,9 @@ interface User {
 interface PostCardProps {
   category: string;
   image: string;
-  question: string;
   user: User;
   location: string;
+  postType: PostType
 }
 
 const StoryCircle: React.FC<StoryCircleProps> = ({ image, name, isAdd = false }) => (
@@ -116,16 +120,27 @@ const ActionButton: React.FC<ActionButtonProps> = ({ title, gradient, onPress })
   </TouchableOpacity>
 );
 
-const PostCard: React.FC<PostCardProps> = ({ category, image, question, user, location }) => (
+const PostCard: React.FC<PostCardProps> = ({ category, image, postType, user, location }) => (
   <View style={styles.postCard}>
     <View style={styles.categoryPill}>
       <Text style={styles.categoryText}>{category}</Text>
     </View>
-    <Image
-      source={{ uri: image }}
-      style={styles.postImage as StyleProp<ImageStyle>}
-      resizeMode="cover"
-    />
+    {postType == 'image' ? (
+      <Image
+        source={{ uri: image }}
+        style={styles.postImage as StyleProp<ImageStyle>}
+        resizeMode="cover"
+      />
+    ) : (
+      <Video
+        source={{ uri: image }}
+        style={styles.postImage as StyleProp<ImageStyle>}
+        shouldPlay={false}
+        useNativeControls={false}
+        isLooping={true}
+      />
+    )
+    }
     <View style={styles.postContent}>
       <View style={styles.userInfo}>
         <Image
@@ -154,7 +169,7 @@ const PostCard: React.FC<PostCardProps> = ({ category, image, question, user, lo
         </TouchableOpacity>
       </View>
     </View>
-  </View>
+  </View >
 );
 
 const NavigationBar: React.FC = () => {
@@ -163,7 +178,7 @@ const NavigationBar: React.FC = () => {
     icon: any;
     label?: string;
   }
- 
+
   const navItems: NavItem[] = [
     { id: 'home', icon: <Home size={30} />, label: 'Home' },
     { id: 'discover', icon: <Compass size={30} />, label: 'Discover' },
@@ -194,17 +209,140 @@ const NavigationBar: React.FC = () => {
   );
 };
 
+
+interface Post {
+  id: number;
+  user_id: number;
+  fullname: string;
+  gender: string;
+  likeCount: number;
+  age: number;
+  commentCount: number;
+  distance: string;
+  profilePicture: string;
+  PostContent: string;
+  postType: PostType;
+}
+const initialData: Post[] = [
+  {
+    id: 1,
+    user_id: 23,
+    fullname: "Robinson Honour",
+    gender: "Male",
+    likeCount: 50,
+    age: 18,
+    commentCount: 100,
+    distance: "200 KM",
+    profilePicture: "https://i.pravatar.cc/800?img=11",
+    PostContent: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+    postType: "video"
+  },
+  {
+    id: 2,
+    user_id: 15,
+    fullname: "Ryan James",
+    gender: "Male",
+    likeCount: 50,
+    age: 22,
+    commentCount: 100,
+    distance: "200 KM",
+    profilePicture: "https://i.pravatar.cc/800?img=16",
+    PostContent: "https://i.pravatar.cc/800?img=36",
+    postType: "image"
+  },
+  {
+    id: 3,
+    user_id: 23,
+    fullname: "Presh Dev",
+    gender: "Female",
+    likeCount: 50,
+    age: 19,
+    commentCount: 100,
+    distance: "200 KM",
+    profilePicture: "https://i.pravatar.cc/800?img=30",
+    PostContent: "https://i.pravatar.cc/800?img=30",
+    postType: "image"
+  },
+];
+
+const friendsData: Post[] = [
+  {
+    id: 1,
+    user_id: 23,
+    fullname: "Robinson Honour",
+    gender: "Male",
+    likeCount: 50,
+    age: 18,
+    commentCount: 100,
+    distance: "200 KM",
+    profilePicture: "https://i.pravatar.cc/800?img=11",
+    PostContent: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+    postType: "video"
+  },
+  {
+    id: 2,
+    user_id: 15,
+    fullname: "Cypher Wealth",
+    gender: "Male",
+    likeCount: 50,
+    age: 22,
+    commentCount: 100,
+    distance: "200 KM",
+    profilePicture: "https://i.pravatar.cc/800?img=22",
+    PostContent: "https://i.pravatar.cc/800?img=12",
+    postType: "image"
+  },
+  {
+    id: 3,
+    user_id: 23,
+    fullname: "Kora Kosrian",
+    gender: "Female",
+    likeCount: 50,
+    age: 19,
+    commentCount: 100,
+    distance: "200 KM",
+    profilePicture: "https://i.pravatar.cc/800?img=23",
+    PostContent: "https://i.pravatar.cc/800?img=1",
+    postType: "image"
+  },
+];
+
+
+
+
 const App: React.FC = () => {
   const [tab, setTab] = useState(0);
+  const [PostData, setPostData] = useState<Post[]>([]);
+  useEffect(() => {
+    setPostData(initialData);
+  }, []);
   const handleMakeFriends = (): void => {
-    console.log('Discover pressed');
+    setPostData([]); 
     setTab(0);
+    console.log('Discover pressed');
+
+    setTimeout(() => {
+      setPostData(initialData); 
+    }, 100);
   };
 
   const handleSearchPartners = (): void => {
-    console.log('Search Partners pressed');
+    setPostData([]); 
     setTab(1);
+    console.log('Search Partners pressed');
+
+    setTimeout(() => {
+      setPostData(friendsData); 
+    }, 100);
   };
+
+  const [refreshing, setRefreshing] = React.useState(false);
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -212,11 +350,14 @@ const App: React.FC = () => {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>G-Plug</Text>
         <TouchableOpacity style={styles.notificationButton}>
-          <Bell color="#2a91f7" size={20} />
+          <Search color="#2a91f7" size={20} />
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content}>
+      <ScrollView style={styles.content} refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={'#2a91f7'} titleColor={'#2a91f7'} title='Hang On!! Refreshing' />
+      }
+      >
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -252,51 +393,37 @@ const App: React.FC = () => {
             onPress={handleMakeFriends}
           />
           <ActionButton
-            title="Search Partners"
+            title="Friends"
             gradient={tab == 1 ? ['#fff', '#fff'] : ['#2a91f700', '#2a91f700']}
             onPress={handleSearchPartners}
           />
         </View>
 
-        <View>
-          <PostCard
-            category="Travel"
-            image="https://i.pravatar.cc/800?img=36"
-            question="If you could live anywhere in the world, where would you pick?"
-            user={{
-              name: "Miranda Kehlani",
-              image: "https://i.pravatar.cc/150?img=3"
-            }}
-            location="STUTTGART"
-          />
-          <PostCard
-            category="Travel"
-            image="https://i.pravatar.cc/800?img=14"
-            question="If you could live anywhere in the world, where would you pick?"
-            user={{
-              name: "Miranda Kehlani",
-              image: "https://i.pravatar.cc/150?img=3"
-            }}
-            location="STUTTGART"
-          />
-          <PostCard
-            category="Travel"
-            image="https://i.pravatar.cc/800?img=4"
-            question="If you could live anywhere in the world, where would you pick?"
-            user={{
-              name: "Miranda Kehlani",
-              image: "https://i.pravatar.cc/150?img=3"
-            }}
-            location="STUTTGART"
-          />
+        <View style={styles.PostCardsView}>
+
+          {PostData && PostData.filter(data => data.postType === 'image').map((data, index) => (
+            <PostCard
+              key={index}
+              category={data.distance}
+              image={data.PostContent}
+              postType={data.postType}
+              user={{
+                name: data.fullname,
+                image: data.profilePicture
+              }}
+              location={`${data.gender} - ${data.age}`}
+            />
+          ))}
+
         </View>
+
       </ScrollView>
 
     </SafeAreaView>
   );
 };
 
- 
+
 const styles = StyleSheet.create<Styles>({
   container: {
     flex: 1,
@@ -309,7 +436,7 @@ const styles = StyleSheet.create<Styles>({
     transform: [{ translateY: -75 }],
   },
   PostButtonmenuContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     borderRadius: 30,
     padding: 8,
     gap: 12,
@@ -354,6 +481,9 @@ const styles = StyleSheet.create<Styles>({
   },
   content: {
     flex: 1,
+  },
+  PostCardsView: {
+    paddingBottom: 100
   },
   storiesContainer: {
     paddingHorizontal: 16,
@@ -426,7 +556,7 @@ const styles = StyleSheet.create<Styles>({
     borderRadius: 20,
     overflow: 'hidden',
     position: 'relative',
-    height: 350
+    height: 400
 
   },
   categoryPill: {
@@ -450,9 +580,12 @@ const styles = StyleSheet.create<Styles>({
     height: '100%',
   },
   postContent: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
     position: 'absolute',
-    bottom: 0
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    width: '100%',
   },
   postQuestion: {
     fontSize: 20,
@@ -463,6 +596,7 @@ const styles = StyleSheet.create<Styles>({
   userInfo: {
     flexDirection: 'row',
     alignItems: 'center',
+
   },
   userImage: {
     width: 40,
@@ -477,8 +611,10 @@ const styles = StyleSheet.create<Styles>({
   },
   userLocation: {
     fontSize: 12,
-    color: '#CCCCCC',
+    color: '#eee',
+    // fontWeight: 'bold',
     textTransform: 'uppercase',
+    textShadowColor: 'red',
   },
   interactionButtons: {
     flexDirection: 'column',

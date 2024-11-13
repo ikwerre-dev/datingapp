@@ -8,6 +8,7 @@ import { Video } from 'expo-av';
 import { usePreventScreenCapture } from 'expo-screen-capture';
 import { SendHorizontal, X } from 'lucide-react-native';
 import { router } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
 
 export default function App() {
     const [permission, requestPermission] = useCameraPermissions();
@@ -121,11 +122,31 @@ export default function App() {
             pressStart.current = now;
         }
     };
-
+  
     const handleGalleryPress = async () => {
+        // Request camera roll permissions
         const { status } = await MediaLibrary.requestPermissionsAsync();
+    
+        // Check if permission is granted
         if (status === 'granted') {
-            const { assets } = await MediaLibrary.getAssetsAsync();
+            // Open the gallery for image and video selection
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.All,  // Allows both images and videos
+                allowsEditing: true, // Allows the user to edit the image or video
+                aspect: [9, 16], // Optional: Set aspect ratio for cropping (for images)
+                quality: 1, // Maximum quality (for images)
+            });
+    
+            // Check if the user selected a media
+            if (!result.canceled) {
+                // Handle the selected media (either image or video)
+                console.log('Selected media URI:', result.assets[0].uri);
+                console.log('Selected media type:', result.assets[0].type);
+            } else {
+                console.log('User canceled media picker');
+            }
+        } else {
+            console.log('Permission to access media library denied');
         }
     };
     if (!permission) {

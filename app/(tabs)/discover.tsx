@@ -41,8 +41,8 @@ const MapScreen = () => {
     if (!userLocation) return [];
     const people: User[] = [];
     for (let i = 0; i < 15; i++) { // Changed to generate 15 people
-      const randomLat = userLocation.latitude + (Math.random() - 0.5) * 0.03;
-      const randomLng = userLocation.longitude + (Math.random() - 0.5) * 0.03;
+      const randomLat = userLocation.latitude + (Math.random() - 0.5) * 0.01;
+      const randomLng = userLocation.longitude + (Math.random() - 0.5) * 0.01;
       people.push({
         id: i,
         latitude: randomLat,

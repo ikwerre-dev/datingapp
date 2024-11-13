@@ -8,7 +8,7 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
-import { Compass, Home, MessageCircle, Plus, Users } from 'lucide-react-native';
+import { Compass, Film, Home, MessageCircle, Plus, Users } from 'lucide-react-native';
 import { router, usePathname } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 
@@ -42,12 +42,14 @@ export default function TabLayout() {
       { id: 'home', icon: <Home size={30} />, label: 'Home' },
       { id: 'discover', icon: <Compass size={30} />, label: 'Discover' },
       { id: 'camera', icon: <Plus size={30} />, label: '' },
-      { id: 'friends', icon: <Users size={30} />, label: 'Friends' },
+      { id: 'reels', icon: <Film size={30} />, label: 'Reels' },
       { id: 'messages', icon: <MessageCircle size={30} />, label: 'Messages' },
     ];
 
     const changeTab = (id: string) => {
       setActiveTab(id);
+      if (id === activeTab) {
+       }
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
       const link: string = id === 'home' ? '/' : `/${id}`;
       router.navigate(link as any);
@@ -139,8 +141,17 @@ export default function TabLayout() {
             tabBarStyle: { display: 'none' },
           }}
         />
+        <Tabs.Screen
+          name="reels"
+          options={{
+            title: 'Reels',
+            headerShown: false,
+            tabBarIcon: ({ color }) => <FontAwesome size={28} name="cog" color={color} />,
+            tabBarStyle: { display: 'none' },
+          }}
+        />
       </Tabs>
-      {activeTab !== 'camera' && <NavigationBar />}
-    </>
+      {(activeTab !== 'camera' && activeTab !== 'reels') && <NavigationBar />}
+      </>
   );
 }
