@@ -49,10 +49,10 @@ export default function TabLayout() {
     const changeTab = (id: string) => {
       setActiveTab(id);
       if (id === activeTab) {
-       }
+      }
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
       const link: string = id === 'home' ? '/' : `/${id}`;
-      router.navigate(link as any);
+      router.push(link as any);
     };
 
     return (
@@ -150,8 +150,17 @@ export default function TabLayout() {
             tabBarStyle: { display: 'none' },
           }}
         />
+        <Tabs.Screen
+          name="messages"
+          options={{
+            title: 'Messages',
+            headerShown: false,
+            tabBarIcon: ({ color }) => <FontAwesome size={28} name="cog" color={color} />,
+            tabBarStyle: { display: 'none' },
+          }}
+        />
       </Tabs>
       {(activeTab !== 'camera' && activeTab !== 'reels') && <NavigationBar />}
-      </>
+    </>
   );
 }

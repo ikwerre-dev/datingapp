@@ -20,20 +20,138 @@ import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 
 const videos = [
-    "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
-    "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-    "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-    "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-    "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+    {
+        id: 1,
+        url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+        userName: "John Doe",
+        userLocation: "San Francisco"
+    },
+    {
+        id: 2,
+        url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+        userName: "Jane Smith",
+        userLocation: "New York"
+    },
+    {
+        id: 3,
+        url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+        userName: "Bob Johnson",
+        userLocation: "Chicago"
+    },
+    {
+        id: 4,
+        url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+        userName: "Sarah Lee",
+        userLocation: "Los Angeles"
+    },
+    {
+        id: 5,
+        url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+        userName: "Tom Wilson",
+        userLocation: "Miami"
+    },
+    {
+        id: 6,
+        url: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
+        userName: "Emily Davis",
+        userLocation: "Seattle"
+    },
+    {
+        id: 7,
+        url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+        userName: "John Doe",
+        userLocation: "San Francisco"
+    },
+    {
+        id: 8,
+        url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+        userName: "Jane Smith",
+        userLocation: "New York"
+    },
+    {
+        id: 9,
+        url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+        userName: "Bob Johnson",
+        userLocation: "Chicago"
+    },
+    {
+        id: 10,
+        url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+        userName: "Sarah Lee",
+        userLocation: "Los Angeles"
+    },
+    {
+        id: 11,
+        url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+        userName: "Tom Wilson",
+        userLocation: "Miami"
+    },
+    {
+        id: 12,
+        url: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
+        userName: "Emily Davis",
+        userLocation: "Seattle"
+    },
+    {
+        id: 13,
+        url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+        userName: "John Doe",
+        userLocation: "San Francisco"
+    },
+    {
+        id: 14,
+        url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+        userName: "Jane Smith",
+        userLocation: "New York"
+    },
+    {
+        id: 15,
+        url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+        userName: "Bob Johnson",
+        userLocation: "Chicago"
+    },
+    {
+        id: 16,
+        url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+        userName: "Sarah Lee",
+        userLocation: "Los Angeles"
+    },
+    {
+        id: 17,
+        url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+        userName: "Tom Wilson",
+        userLocation: "Miami"
+    },
+    {
+        id: 18,
+        url: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
+        userName: "Emily Davis",
+        userLocation: "Seattle"
+    },
+    {
+        id: 19,
+        url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+        userName: "John Doe",
+        userLocation: "San Francisco"
+    },
+    {
+        id: 20,
+        url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+        userName: "Jane Smith",
+        userLocation: "New York"
+    }
 ];
+
+const INITIAL_ITEMS = 5;
 
 export default function FeedScreen() {
     const [currentViewableItemIndex, setCurrentViewableItemIndex] = useState(0);
+    const [displayedVideos, setDisplayedVideos] = useState(videos.slice(0, INITIAL_ITEMS));
     const videoRefs = useRef<(Video | null)[]>([]);
 
     useEffect(() => {
-        videoRefs.current = videos.map(() => null);
-    }, []);
+        videoRefs.current = displayedVideos.map(() => null);
+    }, [displayedVideos]);
 
     useEffect(() => {
         return () => {
@@ -54,30 +172,51 @@ export default function FeedScreen() {
     };
     const viewabilityConfigCallbackPairs = useRef([{ viewabilityConfig, onViewableItemsChanged }]);
 
+    const likePost = (id: number) => {
+        console.log('Liked post:', id);
+    };
+
+    const openChat = (id: number) => {
+        router.push(`/message/chat/${id}`);
+    };
+
+    const loadMoreVideos = () => {
+        const lastIndex = displayedVideos.length - 1;
+        if (lastIndex >= INITIAL_ITEMS - 2) {
+            const newVideos = videos.slice(displayedVideos.length, displayedVideos.length + 5);
+            setDisplayedVideos(prevVideos => [...prevVideos, ...newVideos]);
+            console.log('Loading more videos...');
+        }
+    };
+
     return (
         <View style={styles.container}>
             <FlatList
-                data={videos}
+                data={displayedVideos}
                 renderItem={({ item, index }) => (
                     <Item
                         item={item}
                         shouldPlay={index === currentViewableItemIndex}
                         ref={(ref) => {
-                            videoRefs.current[index] = ref as Video | null; // Cast ref to Video | null
+                            videoRefs.current[index] = ref as Video | null;  
                         }}
+                        onLike={likePost}
+                        onOpenChat={openChat}
                     />
                 )}
-                keyExtractor={(item) => item}
+                keyExtractor={(item) => item.id.toString()}
                 pagingEnabled
                 horizontal={false}
                 showsVerticalScrollIndicator={false}
                 viewabilityConfigCallbackPairs={viewabilityConfigCallbackPairs.current}
+                onEndReached={loadMoreVideos}
+                onEndReachedThreshold={0.5}
             />
         </View>
     );
 }
 
-const Item = React.forwardRef(({ item, shouldPlay }: { shouldPlay: boolean; item: string }, ref: any) => {
+const Item = React.forwardRef(({ item, shouldPlay, onLike, onOpenChat }: { shouldPlay: boolean; item: any; onLike: (id: number) => void; onOpenChat: (id: number) => void }, ref: any) => {
     const video = React.useRef<Video | null>(null);
     const [status, setStatus] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -98,25 +237,14 @@ const Item = React.forwardRef(({ item, shouldPlay }: { shouldPlay: boolean; item
                 setIsDragging(true);
             },
             onPanResponderMove: (_, gestureState) => {
-
-                // const newProgress = Math.max(0, Math.min(1, gestureState.moveX / progressBarWidth));
-                // progressBarWidth.setValue(newProgress * styles.progressBar.width);
-
-                console.debug('Starting - Honour')
+                // Handle progress bar dragging
             },
             onPanResponderRelease: (_, gestureState) => {
-                // const newProgress = Math.max(0, Math.min(1, gestureState.moveX / styles.progressBar.width));
-                // if (video.current && status?.durationMillis) {
-                //     video.current.setPositionAsync(newProgress * status.durationMillis);
-                // }
-                console.debug('Stopping')
-
-                // setIsDragging(false);
+                // Handle progress bar release
+                setIsDragging(false);
             },
         })
     ).current;
-
-
 
     useEffect(() => {
         if (!isDragging && status?.positionMillis && status?.durationMillis) {
@@ -129,11 +257,8 @@ const Item = React.forwardRef(({ item, shouldPlay }: { shouldPlay: boolean; item
                 duration: 500,
                 useNativeDriver: false,
             }).start();
-
-            // console.log(`New progress bar width: ${newWidth}%`);
         }
     }, [status?.positionMillis, status?.durationMillis, isDragging]);
-
 
     // Handle loading animation
     useEffect(() => {
@@ -186,7 +311,7 @@ const Item = React.forwardRef(({ item, shouldPlay }: { shouldPlay: boolean; item
         if (video.current) {
             try {
                 await video.current.unloadAsync();
-                await video.current.loadAsync({ uri: item }, {}, false);
+                await video.current.loadAsync({ uri: item.url }, {}, false);
                 console.log('Video refreshed successfully');
             } catch (error) {
                 console.error('Error refreshing video:', error);
@@ -234,16 +359,12 @@ const Item = React.forwardRef(({ item, shouldPlay }: { shouldPlay: boolean; item
         }
     };
 
-    const likePost = (id:any) =>{
-        console.log('liked:' + id)
-    }
-
     return (
         <Pressable onPress={togglePlayPause}>
             <View style={styles.videoContainer}>
                 <Video
                     ref={video}
-                    source={{ uri: item }}
+                    source={{ uri: item.url }}
                     style={styles.video}
                     isLooping
                     resizeMode={ResizeMode.COVER}
@@ -258,7 +379,6 @@ const Item = React.forwardRef(({ item, shouldPlay }: { shouldPlay: boolean; item
                                     const currentProgress = status.positionMillis / status.durationMillis;
                                     setProgress(currentProgress);
                                 }
-
                             }
                         }
                     }}
@@ -299,19 +419,19 @@ const Item = React.forwardRef(({ item, shouldPlay }: { shouldPlay: boolean; item
                             style={styles.userImage as StyleProp<ImageStyle>}
                         />
                         <View>
-                            <Text style={styles.userName}>{'user.name'}</Text>
-                            <Text style={styles.userLocation}>{'location'}</Text>
+                            <Text style={styles.userName}>{item.userName}</Text>
+                            <Text style={styles.userLocation}>{item.userLocation}</Text>
                         </View>
                     </View>
                 </View>
 
                 <View style={styles.PostButtoncontainer}>
                     <View style={styles.PostButtonmenuContainer}>
-                        <TouchableOpacity onPress={() => likePost(item)} style={styles.PostButtonbutton}>
+                        <TouchableOpacity onPress={() => onLike(item.id)} style={styles.PostButtonbutton}>
                             <ThumbsUp size={24} color="#fff" />
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.PostButtonbutton}>
+                        <TouchableOpacity onPress={() => onOpenChat(item.id)} style={styles.PostButtonbutton}>
                             <MessageCircle size={24} color="#fff" />
                         </TouchableOpacity>
 
@@ -338,6 +458,7 @@ const Item = React.forwardRef(({ item, shouldPlay }: { shouldPlay: boolean; item
         </Pressable>
     );
 });
+
 
 const styles = StyleSheet.create({
     container: {
@@ -419,7 +540,7 @@ const styles = StyleSheet.create({
     },
     progressBarContainer: {
         position: 'absolute',
-        bottom: 100, 
+        bottom: 100,
         left: 0,
         right: 0,
         height: 5,
