@@ -15,130 +15,152 @@ import {
 } from 'react-native';
 import { Video, ResizeMode } from 'expo-av';
 import React, { useEffect, useRef, useState } from 'react';
-import { MessageCircle, MoreHorizontal, ThumbsUp, X, Play, RefreshCcw, Loader } from 'lucide-react-native';
+import { MessageCircle, MoreHorizontal, ThumbsUp, X, Play, RefreshCcw, Loader, Eye, Bookmark } from 'lucide-react-native';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-
+import { LogBox } from 'react-native';
+LogBox.ignoreLogs([/Invalid view returned from registry, expecting EXVideo/]);
 const videos = [
     {
         id: 1,
         url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
         userName: "John Doe",
-        userLocation: "San Francisco"
+        userLocation: "San Francisco",
+        liked: true,
     },
     {
         id: 2,
         url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
         userName: "Jane Smith",
-        userLocation: "New York"
+        userLocation: "New York",
+        liked: false,
     },
     {
         id: 3,
         url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
         userName: "Bob Johnson",
-        userLocation: "Chicago"
+        userLocation: "Chicago",
+        liked: true,
     },
     {
         id: 4,
         url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
         userName: "Sarah Lee",
-        userLocation: "Los Angeles"
+        userLocation: "Los Angeles",
+        liked: false,
     },
     {
         id: 5,
         url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
         userName: "Tom Wilson",
-        userLocation: "Miami"
+        userLocation: "Miami",
+        liked: true,
     },
     {
         id: 6,
         url: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
         userName: "Emily Davis",
-        userLocation: "Seattle"
+        userLocation: "Seattle",
+        liked: false,
     },
     {
         id: 7,
         url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
         userName: "John Doe",
-        userLocation: "San Francisco"
+        userLocation: "San Francisco",
+        liked: false,
     },
     {
         id: 8,
         url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
         userName: "Jane Smith",
-        userLocation: "New York"
+        userLocation: "New York",
+        liked: false,
     },
     {
         id: 9,
         url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
         userName: "Bob Johnson",
-        userLocation: "Chicago"
+        userLocation: "Chicago",
+        liked: false,
     },
     {
         id: 10,
         url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
         userName: "Sarah Lee",
-        userLocation: "Los Angeles"
+        userLocation: "Los Angeles",
+        liked: false,
     },
     {
         id: 11,
         url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
         userName: "Tom Wilson",
-        userLocation: "Miami"
+        userLocation: "Miami",
+        liked: false,
     },
     {
         id: 12,
         url: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
         userName: "Emily Davis",
-        userLocation: "Seattle"
+        userLocation: "Seattle",
+        liked: false,
     },
     {
         id: 13,
         url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
         userName: "John Doe",
-        userLocation: "San Francisco"
+        userLocation: "San Francisco",
+        liked: false,
     },
     {
         id: 14,
         url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
         userName: "Jane Smith",
-        userLocation: "New York"
+        userLocation: "New York",
+        liked: false,
     },
     {
         id: 15,
         url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
         userName: "Bob Johnson",
-        userLocation: "Chicago"
+        userLocation: "Chicago",
+        liked: false,
     },
     {
         id: 16,
         url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
         userName: "Sarah Lee",
-        userLocation: "Los Angeles"
+        userLocation: "Los Angeles",
+        liked: false,
     },
     {
         id: 17,
         url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
         userName: "Tom Wilson",
-        userLocation: "Miami"
+        userLocation: "Miami",
+        liked: false,
     },
     {
         id: 18,
         url: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
         userName: "Emily Davis",
-        userLocation: "Seattle"
+        userLocation: "Seattle",
+        liked: false,
     },
     {
         id: 19,
         url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
         userName: "John Doe",
-        userLocation: "San Francisco"
+        userLocation: "San Francisco",
+        liked: false,
     },
     {
         id: 20,
         url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
         userName: "Jane Smith",
-        userLocation: "New York"
+        userLocation: "New York",
+        liked: true,
+
     }
 ];
 
@@ -173,6 +195,7 @@ export default function FeedScreen() {
     const viewabilityConfigCallbackPairs = useRef([{ viewabilityConfig, onViewableItemsChanged }]);
 
     const likePost = (id: number) => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
         console.log('Liked post:', id);
     };
 
@@ -198,7 +221,7 @@ export default function FeedScreen() {
                         item={item}
                         shouldPlay={index === currentViewableItemIndex}
                         ref={(ref) => {
-                            videoRefs.current[index] = ref as Video | null;  
+                            videoRefs.current[index] = ref as Video | null;
                         }}
                         onLike={likePost}
                         onOpenChat={openChat}
@@ -224,6 +247,7 @@ const Item = React.forwardRef(({ item, shouldPlay, onLike, onOpenChat }: { shoul
     const [isActuallyPlaying, setIsActuallyPlaying] = useState(false);
     const spinValue = new Animated.Value(0);
     const [progress, setProgress] = useState(0);
+    console.log(item)
 
     // Set the ref for parent component access
     React.useImperativeHandle(ref, () => video.current);
@@ -358,7 +382,13 @@ const Item = React.forwardRef(({ item, shouldPlay, onLike, onOpenChat }: { shoul
             setIsActuallyPlaying(false);
         }
     };
+    const [liked, setLiked] = useState(item.liked);
 
+    const handlePress = () => {
+        const newLikedStatus = !liked;
+        setLiked(newLikedStatus);
+        onLike(item.id); // Optionally, call the parent method with the updated state
+    };
     return (
         <Pressable onPress={togglePlayPause}>
             <View style={styles.videoContainer}>
@@ -427,8 +457,14 @@ const Item = React.forwardRef(({ item, shouldPlay, onLike, onOpenChat }: { shoul
 
                 <View style={styles.PostButtoncontainer}>
                     <View style={styles.PostButtonmenuContainer}>
-                        <TouchableOpacity onPress={() => onLike(item.id)} style={styles.PostButtonbutton}>
-                            <ThumbsUp size={24} color="#fff" />
+                        <TouchableOpacity
+                            onPress={handlePress}
+                            style={[
+                                styles.PostButtonbutton,
+                                liked && { backgroundColor: 'rgba(0,0, 255, 0.5)' }
+                            ]}
+                        >
+                          <ThumbsUp size={24} color="#fff" />
                         </TouchableOpacity>
 
                         <TouchableOpacity onPress={() => onOpenChat(item.id)} style={styles.PostButtonbutton}>
@@ -436,7 +472,7 @@ const Item = React.forwardRef(({ item, shouldPlay, onLike, onOpenChat }: { shoul
                         </TouchableOpacity>
 
                         <TouchableOpacity style={styles.PostButtonbutton}>
-                            <MoreHorizontal size={24} color="#fff" />
+                            <Bookmark size={24} color="#fff" />
                         </TouchableOpacity>
 
                         <TouchableOpacity onPress={leave} style={styles.PostButtonbutton}>

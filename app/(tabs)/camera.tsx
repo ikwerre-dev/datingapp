@@ -111,17 +111,26 @@ export default function CameraComponent() {
         if (cameraRef.current) {
             setIsTakingPicture(true);
             const photo = await cameraRef.current.takePictureAsync();
-            console.log('Photo taken:', photo.uri);
+            if (photo && photo.uri) {
+                console.log('Photo taken:', photo.uri);
+            } else {
+                console.log('Photo not taken or invalid.');
+            }
             setIsTakingPicture(false);
         }
     };
-
+    
     const startRecording = async () => {
         if (cameraRef.current && !isRecording) {
             setIsRecording(true);
             console.log('Started Recording');
             const video = await cameraRef.current.recordAsync();
-            console.log('Video recorded:', video.uri);
+            if (video && video.uri) {
+                console.log('Video recorded:', video.uri);
+            } else {
+                console.log('Video not recorded or invalid.');
+            }
+            setIsRecording(false);
         }
     };
 
@@ -176,7 +185,7 @@ export default function CameraComponent() {
 
     if (!permission.granted) {
         return (
-            <View style={styles.container}>
+            <View style={styles.permissioncontainer}>
                 <Text style={styles.message}>We need your permission to use the camera</Text>
                 <TouchableOpacity onPress={() => { requestPermission(); }}>
                     <Text style={styles.button}>Grant permissions</Text>
@@ -273,6 +282,12 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: 'black',
+    },
+    permissioncontainer: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: 'black'
     },
     camera: {
         flex: 1,

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, FlatList, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import { router, usePathname } from 'expo-router';
 
 interface Message {
   id: number;
@@ -15,6 +16,7 @@ const MessageListScreen = () => {
   const router = useRouter();
 
   useEffect(() => {
+
     // Fetch messages from an API or database
     const fetchMessages = async () => {
       const mockMessages: Message[] = [
@@ -44,11 +46,12 @@ const MessageListScreen = () => {
 
   const handleMessagePress = (message: Message) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    router.push(`/chat/${message.id}`);
+    router.replace(`../../intro`);
   };
 
   return (
     <View style={styles.container}>
+       
       <FlatList
         data={messages}
         keyExtractor={(item) => item.id.toString()}
