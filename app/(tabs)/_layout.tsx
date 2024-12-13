@@ -71,7 +71,7 @@ export default function Layout() {
         activeTab !== 'profile' &&
         activeTab !== 'chat') && <NavigationBar />}
     </View>
-  );
+  ); 
 }
 
 const styles = StyleSheet.create({

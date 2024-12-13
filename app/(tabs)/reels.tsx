@@ -23,9 +23,9 @@ LogBox.ignoreLogs([/Invalid view returned from registry, expecting EXVideo/]);
 const videos = [
     {
         id: 1,
-        url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-        userName: "John Doe",
-        userLocation: "San Francisco",
+        url: "https://indulgetix.com/clanshare_api/uploads/675b98404f67a_3DC01467-5F30-41E3-ADCF-CCE4202A5678.mp4",
+        userName: "Robinson Honour",
+        userLocation: "Port Harcourt",
         liked: true,
     },
     {

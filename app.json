@@ -28,6 +28,9 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
+    "cli": {
+      "appVersionSource": "file"  
+    },
     "plugins": [
       "expo-router",
       "expo-secure-store",
@@ -61,15 +64,15 @@
       }
     },
     "runtimeVersion": "1.0.0",
-    "newArchEnabled" : true,
+    "newArchEnabled": true,
     "updates": {
       "url": "https://u.expo.dev/2ddd7b8c-ce88-468c-8ab1-84ed06532934"
     },
     "main": "expo-router/entry"
   },
   "react-native": {
-      "android": {
-        "packageName": "com.codewithhonour.datingapp"
-      }
+    "android": {
+      "packageName": "com.codewithhonour.datingapp"
     }
+  }
 }

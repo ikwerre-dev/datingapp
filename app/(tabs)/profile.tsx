@@ -82,7 +82,7 @@ export default function ProfileScreen() {
               <Pencil size={20} color="#FFF" />
             </TouchableOpacity>
           </View>
-          <Text style={styles.name}>Ronald Richards</Text>
+          <Text style={styles.name}>Robinson Honour</Text>
           <Text style={styles.role}>Marketing Coordinator</Text>
         </View>
 

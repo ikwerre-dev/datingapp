@@ -201,8 +201,8 @@ const NavigationBar: React.FC = () => {
             key={item.id}
             style={styles.navItem}
           >
-            {item.icon}
-          </TouchableOpacity>
+            {item.icon} 
+          </TouchableOpacity> 
         ))}
       </View>
     </View>
@@ -247,11 +247,37 @@ const initialData: Post[] = [
     commentCount: 100,
     distance: "200 KM",
     profilePicture: "https://i.pravatar.cc/800?img=16",
-    PostContent: "https://i.pravatar.cc/800?img=36",
+    PostContent: "https://indulgetix.com/clanshare_api/uploads/675b921f3cd4a_IMG_3353.jpg",
     postType: "image"
   },
   {
-    id: 3,
+    id: 66,
+    user_id: 15,
+    fullname: "Ryan James",
+    gender: "Male",
+    likeCount: 50,
+    age: 22,
+    commentCount: 100, 
+    distance: "200 KM",
+    profilePicture: "https://i.pravatar.cc/800?img=16", 
+    PostContent: "https://i.pravatar.cc/800?img=34",
+    postType: "image"
+  },
+  {
+    id: 44,
+    user_id: 15,
+    fullname: "Ryan James",
+    gender: "Male",
+    likeCount: 50,
+    age: 22,
+    commentCount: 100,
+    distance: "200 KM",
+    profilePicture: "https://i.pravatar.cc/800?img=16",
+    PostContent: "https://i.pravatar.cc/800?img=13",
+    postType: "image"
+  },
+  {
+    id: 43,
     user_id: 23,
     fullname: "Presh Dev",
     gender: "Female",
@@ -555,7 +581,7 @@ const styles = StyleSheet.create<Styles>({
     borderRadius: 20,
     overflow: 'hidden',
     position: 'relative',
-    height: 400
+    height: 450
 
   },
   categoryPill: {

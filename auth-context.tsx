@@ -1,9 +1,8 @@
 import React, { createContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Create the AuthContext
+// Create the AuthContext 
 const AuthContext = createContext();
-
 // AuthContext Provider component
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
