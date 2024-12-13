@@ -1,32 +1,15 @@
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Tabs } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  TouchableOpacity,
-  ViewStyle,
-  TextStyle,
-} from 'react-native';
-import { Compass, Film, Home, MessageCircle, Plus, Users } from 'lucide-react-native';
-import { router, usePathname } from 'expo-router';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { Slot, usePathname, useRouter, Stack } from 'expo-router';
+import { Compass, Film, Home, MessageCircle, Plus } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 
-type Styles = {
-  navBar: ViewStyle;
-  navBarContent: ViewStyle;
-  navItem: ViewStyle;
-  navIcon: ViewStyle;
-  activeNavIcon: ViewStyle;
-  navText: TextStyle;
-};
-
-export default function TabLayout() {
+export default function Layout() {
   const [activeTab, setActiveTab] = useState('home');
   const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
-    // Update activeTab based on the current route
     const currentTab = pathname === '/' ? 'home' : pathname.substring(1);
     setActiveTab(currentTab);
   }, [pathname]);
@@ -34,7 +17,7 @@ export default function TabLayout() {
   const NavigationBar: React.FC = () => {
     interface NavItem {
       id: string;
-      icon: any;
+      icon: React.ReactNode;
       label?: string;
     }
 
@@ -48,11 +31,9 @@ export default function TabLayout() {
 
     const changeTab = (id: string) => {
       setActiveTab(id);
-      if (id === activeTab) {
-      }
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
       const link: string = id === 'home' ? '/' : `/${id}`;
-      router.push(link as any);
+      router.push(link);
     };
 
     return (
@@ -74,93 +55,47 @@ export default function TabLayout() {
     );
   };
 
-  const styles = StyleSheet.create<Styles>({
-    navBarContent: {
-      position: 'absolute',
-      bottom: 0,
-      width: '100%',
-      padding: 30,
-      paddingBottom: 60,
-    },
-    navBar: {
-      flexDirection: 'row',
-      justifyContent: 'space-around',
-      paddingVertical: 20,
-      borderWidth: 1,
-      borderColor: '#EEEEEE',
-      width: '100%',
-      backgroundColor: '#fff',
-      borderRadius: 50,
-    },
-    navItem: {
-      alignItems: 'center',
-    },
-    navIcon: {
-      width: 24,
-      height: 24,
-      borderRadius: 12,
-      backgroundColor: '#DDDDDD',
-    },
-    activeNavIcon: {
-      backgroundColor: '#2a91f7',
-    },
-    navText: {
-      fontSize: 12,
-      color: '#333333',
-      marginTop: 4,
-    },
-  });
-
   return (
-    <>
-      <Tabs screenOptions={{ tabBarActiveTintColor: 'blue' }}>
-        <Tabs.Screen
-          name="index"
-          options={{
-            title: 'Home',
-            headerShown: false,
-            tabBarIcon: ({ color }) => <FontAwesome size={28} name="home" color={color} />,
-            tabBarStyle: { display: 'none' },
-          }}
-        />
-        <Tabs.Screen
-          name="discover"
-          options={{
-            title: 'Discover',
-            headerShown: false,
-            tabBarIcon: ({ color }) => <FontAwesome size={28} name="cog" color={color} />,
-            tabBarStyle: { display: 'none' },
-          }}
-        />
-        <Tabs.Screen
-          name="camera"
-          options={{
-            title: 'Camera',
-            headerShown: false,
-            tabBarIcon: ({ color }) => <FontAwesome size={28} name="cog" color={color} />,
-            tabBarStyle: { display: 'none' },
-          }}
-        />
-        <Tabs.Screen
-          name="reels"
-          options={{
-            title: 'Reels',
-            headerShown: false,
-            tabBarIcon: ({ color }) => <FontAwesome size={28} name="cog" color={color} />,
-            tabBarStyle: { display: 'none' },
-          }}
-        />
-        <Tabs.Screen
-          name="messages"
-          options={{
-            title: 'Messages',
-            headerShown: false,
-            tabBarIcon: ({ color }) => <FontAwesome size={28} name="cog" color={color} />,
-            tabBarStyle: { display: 'none' },
-          }}
-        />
-      </Tabs>
-      {(activeTab !== 'camera' && activeTab !== 'reels') && <NavigationBar />}
-    </>
+    <View style={styles.container}>
+      {/* Add the Stack Navigator */}
+      <Stack
+        screenOptions={{
+          gestureEnabled: !['home', 'discover', 'camera', 'reels', 'messages','intro'].includes(activeTab),
+          headerShown: false, // Hide headers (if preferred)
+        }}
+      >
+        <Slot />
+      </Stack>
+      {(activeTab !== 'camera' &&
+        activeTab !== 'reels' &&
+        activeTab !== 'profile' &&
+        activeTab !== 'chat') && <NavigationBar />}
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  navBarContent: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    padding: 30,
+    paddingBottom: 60,
+  },
+  navBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 20,
+    borderWidth: 1,
+    borderColor: '#EEEEEE',
+    width: '100%',
+    backgroundColor: '#fff',
+    borderRadius: 50,
+  },
+  navItem: {
+    alignItems: 'center',
+  },
+});

@@ -398,9 +398,8 @@ const App: React.FC = () => {
             onPress={handleSearchPartners}
           />
         </View>
-
         <View style={styles.PostCardsView}>
-
+          
           {PostData && PostData.filter(data => data.postType === 'image').map((data, index) => (
             <PostCard
               key={index}

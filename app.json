@@ -66,5 +66,10 @@
       "url": "https://u.expo.dev/2ddd7b8c-ce88-468c-8ab1-84ed06532934"
     },
     "main": "expo-router/entry"
-  }
+  },
+  "react-native": {
+      "android": {
+        "packageName": "com.codewithhonour.datingapp"
+      }
+    }
 }
